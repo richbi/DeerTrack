@@ -419,6 +419,23 @@ pdf(out.path)
 plot1
 dev.off()
 
+###########################################################
+#      LOAD HUNTING AREAS
+###########################################################
+
+
+in.path<-file.path(myVars$WD,myVars$modelName,"DATA/GIS DATA/data_rundt_svanoy/HUNTING AREAS/HuntingAreas.shp")
+
+hunting.areas.sf<- read_sf(in.path)
+hunting.areas.sf2<-st_transform(hunting.areas.sf,proj4.NATLgrid)
+
+mapview(hunting.areas.sf2)
+
+hunting.areas.sf2<- st_intersection(hunting.areas.sf2, svanoy.sf2)
+
+#AR5.sf2
+hunting.areas.sf2 <- hunting.areas.sf2 %>% st_collection_extract("POLYGON")
+
 
 
 ###########################################################
@@ -431,7 +448,7 @@ dev.off()
 grid250.sf<-st_transform(grid250.sf2,proj4.latlong)
 svanoy.sf<-st_transform(svanoy.sf2,proj4.latlong)
 AR5.sf<-st_transform(AR5.sf2,proj4.latlong)
-
+hunting.areas.sf<-st_transform(hunting.areas.sf2,proj4.latlong)
 
 
 leaflet(roads.sf) %>% 
@@ -448,11 +465,11 @@ deer.leaflet <-  leaflet() %>% #width = "100%"#height=650, width=1000
   # addTiles(group="One")%>%  # Add default OpenStreetMap map tiles
   addProviderTiles(providers$Esri.WorldImagery,
                    group="Two")%>%
-  addPolygons(data=AR5.sf,col=ar5.cols,weight = 1,opacity = 1,fillOpacity = 0.5,group="AR5",
-              popup = paste("Arealtype ", AR5.sf$arealtype))%>%
+  # addPolygons(data=AR5.sf,col=ar5.cols,weight = 1,opacity = 1,fillOpacity = 0.5,group="AR5",
+  #             popup = paste("Arealtype ", AR5.sf$arealtype))%>%
 
   
-  addPolygons(data=svanoy.sf,col="white",weight =2,opacity = 1,fillOpacity = 0,group="Svanoya")  %>%
+  #addPolygons(data=svanoy.sf,col="white",weight =2,opacity = 1,fillOpacity = 0,group="Svanoya")  %>%
   
   addPolygons(data=properties.sf,col="red",weight = 1.5,opacity = 0.7,fillOpacity = 0,group="Property boundaries",
               popup = paste("Teigid ", properties.sf$teigid))%>%
@@ -463,7 +480,7 @@ deer.leaflet <-  leaflet() %>% #width = "100%"#height=650, width=1000
   addPolygons(data=buildings.sf,col="white",fillColor = "red",weight = 1,opacity = 1,fillOpacity = 1,group="Buildings",
               popup = paste("Type ", buildings.sf$objtype))%>%
   
-  addPolygons(data=grid250.sf,col="yellow",weight = 2,opacity = 0.3,fillOpacity = 0,group="National grid (250m)",
+  addPolygons(data=grid250.sf,col="yellow",weight = 2,opacity = 0.3,fillOpacity = 0,group="Study grid (250m)",
               # popup = paste("Cell ID ", grid250.sf$TARGET_FID),
               # popupOptions = popupOptions(
               #   style = list("font-weight" = "bold"
@@ -474,7 +491,19 @@ deer.leaflet <-  leaflet() %>% #width = "100%"#height=650, width=1000
               labelOptions=labelOptions(style = list("font-weight" = "normal",
                                         "padding" = "3px 3px", 
                                         "font-size" = "20px", 
-                                        "direction" = "auto" ))) 
+                                        "direction" = "auto" )))%>%
+  addPolygons(data=hunting.areas.sf,col="white",weight = 2.5,opacity = 0.8,fillOpacity = 0,group="Hunting areas",
+              # popup = paste("Cell ID ", grid250.sf$TARGET_FID),
+              # popupOptions = popupOptions(
+              #   style = list("font-weight" = "bold"
+              #                , "padding" = "3px 8px"
+              #                , "textsize" = "50px"
+              #                , "direction" = "auto" )),
+              label = ~hunting.areas.sf$NorName,
+              labelOptions=labelOptions(style = list("font-weight" = "normal",
+                                                     "padding" = "3px 3px", 
+                                                     "font-size" = "20px", 
+                                                     "direction" = "auto" ))) 
 
     # addPolygons(data=honeycomb_grid_sf,col="white",weight = 1,opacity = 0.3,fillOpacity = 0,group="Hexagonal grid (250m)",
     #           popup = paste("Cell ID "))#%>%
@@ -486,15 +515,15 @@ deer.leaflet <-  leaflet() %>% #width = "100%"#height=650, width=1000
 deer.leaflet<-deer.leaflet%>%  
   addLayersControl(
     #baseGroups = c("Two"),
-    overlayGroups  = c("Svanoya","AR5","Property boundaries","Roads","Buildings","National grid (250m)","Hexagonal grid (250m)"),
+    overlayGroups  = c("Roads","Buildings","Study grid (250m)","Hunting areas"),#"Property boundaries","Hexagonal grid (250m)","AR5"
     options = layersControlOptions(collapsed = TRUE)
     
-  ) %>% hideGroup("Hexagonal grid (250m)") %>% hideGroup("AR5") %>% hideGroup("Property boundaries") %>% hideGroup("Buildings") %>% hideGroup("Roads")
+  ) %>% hideGroup("Property boundaries") %>% hideGroup("Buildings") %>% hideGroup("Roads")
 
-#deer.leaflet
+deer.leaflet
 
 
-out.path<-file.path(fig.path,"MapView_Svanoy.html")
+out.path<-file.path("C:/Users/richbi/OneDrive - Norwegian University of Life Sciences/PROJECTS/DeerTrack/docs/index.html")
 mapview::mapshot(
   deer.leaflet,
   url = out.path)
