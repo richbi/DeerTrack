@@ -159,8 +159,6 @@ marking.df<-marking.df%>%
   
 
 
-
-
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ## ------ DOWNLOADING GPS DATA VIA NORDIC API  -----
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -965,13 +963,16 @@ for (i in 1:dim(marking.df)[1]) {
 ## ------ MAPPING ALL DEER POSITIONS  ----- (USE LEAFLET INSTEAD TO TOGGLE BETWEEN INDIVIDUALS)
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+#--for now, only plot
+markingJUL2025.df<-marking.df%>%filter(collared.datetime.posix>=as.POSIXct("2025-06-30"))
+
 
 i<-3
-gps.pts.ls<-lapply (1:dim(marking.df)[1],function(i){
+gps.pts.ls<-lapply (1:dim(markingJUL2025.df)[1],function(i){
   print(i)
   gps.sf<-NULL
   try({
-    label<-paste("Deer", marking.df$DEER.ID[i],"_GPS",right(marking.df$GPS.ID[i],4), sep = "")
+    label<-paste("Deer", markingJUL2025.df$DEER.ID[i],"_GPS",right(markingJUL2025.df$GPS.ID[i],4), sep = "")
     
     in.path <- file.path(dat.path, "PROCESSED GPS DATA", paste("data_", label, ".RData", sep = ""))
     
@@ -985,7 +986,7 @@ gps.pts.ls<-lapply (1:dim(marking.df)[1],function(i){
     dim(gps.sf)
     
     #mapview(gps.sf)
-    gps.sf$deer.id<-as.character(marking.df$DEER.ID[i])
+    gps.sf$deer.id<-as.character(markingJUL2025.df$DEER.ID[i])
     
   },silent=TRUE
   )
@@ -1007,7 +1008,7 @@ gps.tracks.ls<-lapply(gps.pts.ls,function(x){
   return(out)
 })
 
-deer.list<-marking.df$DEER.ID
+deer.list<-markingJUL2025.df$DEER.ID
 
 deer.colors<-rainbow(n=length(deer.list))
 #deer.colors<-sample(colors(),length(deer.list))
@@ -1019,6 +1020,7 @@ deer.list<-deer.list[keep]
 gps.tracks.ls<-gps.tracks.ls[keep]
 gps.pts.ls<-gps.pts.ls[keep]
 
+anchor<-c(61.491530956260874, 5.096944740514957)
 
 #make_map <- function() {
   mymap <- leaflet() %>%
@@ -1027,7 +1029,7 @@ gps.pts.ls<-gps.pts.ls[keep]
       providers$Esri.WorldImagery,
       options = providerTileOptions(opacity = 0.5)
     ) %>%
-    setView(lng = 5.092462433, lat = 61.48032607	, zoom = 14)
+    setView(lng = anchor[2], lat = anchor[1], zoom = 14)
   
   
   i<-1
@@ -1098,46 +1100,46 @@ gps.pts.ls<-gps.pts.ls[keep]
   
 library(htmlwidgets)
 
-out.path<-file.path(fig.path,"Leaflet.html")
+out.path<-file.path("C:/Users/richbi/OneDrive - Norwegian University of Life Sciences/PROJECTS/DeerTrack/docs/Leaflet.html")
 
 saveWidget(mymap, file=out.path)
 getwd()
 
 
 
-
-#########################################
-#########################################
-#########################################
-
-i<-12
-temp<-lapply (1:dim(marking.df)[1],function(i){
-  gps.sf<-NULL
-  try({
-  label<-paste("Deer", marking.df$DEER.ID[i],"_GPS",right(marking.df$GPS.ID[i],4), sep = "")
-  
-in.path <- file.path(dat.path, "PROCESSED GPS DATA", paste("data_", label, ".RData", sep = ""))
-
-load(in.path)#gps.sf
-
-
-dim(gps.sf)
-gps.sf<-gps.sf%>%filter(QQ > 0 & HDOP<=4)
-dim(gps.sf)
-
-mapview(gps.sf)
-gps.sf$deer.id<-as.character(marking.df$DEER.ID[i])
-
-},silent=TRUE
-  )
-return(gps.sf)
-
-})
-all.gps.sf<-do.call(rbind,temp)
-all.gps.track.sf<-all.gps.sf%>%group_by(deer.id)%>% arrange(datetime.posix) %>% summarize(geometry = st_combine(geometry) ) %>% st_cast("LINESTRING")%>%ungroup()
-table(all.gps.sf$deer.id)
-
-mapview(all.gps.track.sf,zcol="deer.id")
-
-all.gps.sf%>%st_drop_geometry()%>%summary
+# 
+# #########################################
+# #########################################
+# #########################################
+# 
+# i<-12
+# temp<-lapply (1:dim(marking.df)[1],function(i){
+#   gps.sf<-NULL
+#   try({
+#   label<-paste("Deer", marking.df$DEER.ID[i],"_GPS",right(marking.df$GPS.ID[i],4), sep = "")
+#   
+# in.path <- file.path(dat.path, "PROCESSED GPS DATA", paste("data_", label, ".RData", sep = ""))
+# 
+# load(in.path)#gps.sf
+# 
+# 
+# dim(gps.sf)
+# gps.sf<-gps.sf%>%filter(QQ > 0 & HDOP<=4)
+# dim(gps.sf)
+# 
+# mapview(gps.sf)
+# gps.sf$deer.id<-as.character(marking.df$DEER.ID[i])
+# 
+# },silent=TRUE
+#   )
+# return(gps.sf)
+# 
+# })
+# all.gps.sf<-do.call(rbind,temp)
+# all.gps.track.sf<-all.gps.sf%>%group_by(deer.id)%>% arrange(datetime.posix) %>% summarize(geometry = st_combine(geometry) ) %>% st_cast("LINESTRING")%>%ungroup()
+# table(all.gps.sf$deer.id)
+# 
+# mapview(all.gps.track.sf,zcol="deer.id")
+# 
+# all.gps.sf%>%st_drop_geometry()%>%summary
 
