@@ -210,6 +210,7 @@ for (i in 1:dim(marking.df)[1]) {
   
   print(label)
   now.posix<-marking.df$end.datetime.posix[i]#as.POSIXct(Sys.time(),tz="UTC")
+  current.posix <-as.POSIXct(Sys.time(),tz="UTC")
   try({
 
     ###########################################################
@@ -382,6 +383,9 @@ for (i in 1:dim(marking.df)[1]) {
     ggplot.allActivity<-ggplot(all.data,aes(x=datetime.posix,y=n.events)) + 
       geom_jitter(data=temp,aes(x=datetime.posix,y=bat,color=activity.n),height=max(all.data$n.events)/40,alpha=0.3) +geom_line() +
       geom_vline(aes(xintercept=now.posix),color="red")+
+      geom_vline(aes(xintercept=current.posix),color="blue")+
+      xlim(time.xlim)+
+      
       # theme(legend.position = c(0.2, .7)#,
       #         
       #       #panel.background = element_rect(fill = "black")
@@ -403,6 +407,8 @@ for (i in 1:dim(marking.df)[1]) {
     # hist(all.data$deltaT[all.data$deltaT>0 & all.data$deltaT<500])
     
 
+    time.xlim<-range(c(range(all.data$datetime.posix,na.rm=TRUE),current.posix))
+    
     ###########################################################
     #       GGA STRING FORMATTING/PARSING
     ###########################################################
@@ -558,10 +564,12 @@ for (i in 1:dim(marking.df)[1]) {
       ggplot.pos<-ggplot(gga.data,aes(x=datetime.posix,y=n.pos)) + 
         geom_point (data=gga.received.data,mapping=aes(x=datetime.posix,y=n.pos),color="pink",alpha=0.5,size=3) +
         geom_vline(aes(xintercept=now.posix),color="red")+
+        geom_vline(aes(xintercept=current.posix),color="blue")+
+        xlim(time.xlim)+
         geom_line(color=grey(0.5)) + 
         geom_point () +
         
-        xlim(c(min(all.data$datetime.posix,na.rm=TRUE),now.posix)) +
+        #xlim(c(min(all.data$datetime.posix,na.rm=TRUE),now.posix)) +
         ggtitle(paste("GPS position accumulation","-->",gga.data$n.pos[gga.data$datetime.posix==max(gga.data$datetime.posix)]))
       
       
@@ -653,7 +661,11 @@ for (i in 1:dim(marking.df)[1]) {
       
       plot.nsd<-ggplot(data=dat$gps.sf,mapping=aes(x=datetime.posix,y=nsd)) +
         geom_line() +
-        geom_point(aes(color=HDOP<=4))
+        geom_point(aes(color=HDOP<=4))+
+        geom_vline(aes(xintercept=now.posix),color="red")+
+        geom_vline(aes(xintercept=current.posix),color="blue")+
+        xlim(time.xlim)
+
       
       
       has.gnss.data<-TRUE
@@ -734,7 +746,9 @@ for (i in 1:dim(marking.df)[1]) {
       ggplot.rsrp<-ggplot(data=temp,mapping=aes(x=datetime.posix,y=rsrp,color=rsrp.variable))+
         geom_line()+
         geom_hline(yintercept=mean.rsrp,color="black",linetype=2,linewidth=2)+
-        xlim(c(min(all.data$datetime.posix,na.rm=TRUE),now.posix)) + 
+        geom_vline(aes(xintercept=now.posix),color="red")+
+        geom_vline(aes(xintercept=current.posix),color="blue")+
+        xlim(time.xlim)+
         ylim(c(-150,-50)) +
         
         theme(legend.position = "none")+
@@ -822,11 +836,12 @@ for (i in 1:dim(marking.df)[1]) {
     
     
     ggplot.bat<-ggplot(bat.data,aes(x=datetime.posix,y=bat)) +
-      geom_vline(aes(xintercept=now.posix),color="red")+
       geom_jitter(data=temp,aes(x=received.datetime.posix,y=bat,color=activity.n),height=(batlim[2]-batlim[1])*0.8/40,alpha=0.5) +
       geom_line(color=grey(0.5)) + 
       geom_point () +
-      xlim(c(min(all.data$datetime.posix,na.rm=TRUE),now.posix)) + 
+      geom_vline(aes(xintercept=now.posix),color="red")+
+      geom_vline(aes(xintercept=current.posix),color="blue")+
+      xlim(time.xlim)+
       ylim(c(3000,4300)) +
       theme(legend.position = "bottom",
             legend.title = element_blank())+
@@ -847,9 +862,11 @@ for (i in 1:dim(marking.df)[1]) {
       geom_point (data=bat.received.data,mapping=aes(x=datetime.posix,y=n.pos),color="pink",alpha=0.5,size=3) +
       geom_point (data=bat.received.data,mapping=aes(x=datetime.posix,y=n.pos),color="red",alpha=1,size=0.2) +
       geom_vline(aes(xintercept=now.posix),color="red")+
+      geom_vline(aes(xintercept=current.posix),color="blue")+
+      xlim(time.xlim)+
       geom_line(color=grey(0.5)) + 
       geom_point () +
-      xlim(c(min(all.data$datetime.posix,na.rm=TRUE),now.posix)) +
+      #xlim(c(min(all.data$datetime.posix,na.rm=TRUE),now.posix)) +
       ggtitle(paste("Battery reading accumulation","-->",bat.data$n.pos[bat.data$datetime.posix==max(bat.data$datetime.posix)]))
     
     
