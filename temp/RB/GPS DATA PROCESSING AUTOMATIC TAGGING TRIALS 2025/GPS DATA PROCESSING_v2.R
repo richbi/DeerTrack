@@ -1154,6 +1154,31 @@ gps.tracks.ls<-lapply(gps.pts.ls,function(x){
   return(out)
 })
 
+names(gps.pts.ls[[1]])
+
+last.batch.ls<-lapply(gps.pts.ls,function(x){
+  out<-NULL
+  try({
+    out<-x%>%
+      filter(as.numeric(difftime(max(datetime.posix),datetime.posix,units = "hours"))<=48)
+    
+  },silent=TRUE)
+  return(out)
+})
+# 
+# #----POSITIONS LAST 24 HOURS
+# last.batch<-gps.tracks.ls[[i]]%>%
+#   filter(as.numeric(difftime(now.posix,datetime.posix,units = "hours"))<=48)
+# 
+# centroid.xy<-dat$gps.sf%>%
+#   filter(as.numeric(difftime(now.posix,datetime.posix,units = "hours"))<=48) %>%
+#   st_transform(crs=4326)%>%
+#   st_union()%>%st_centroid()%>%st_coordinates()%>%round(5)
+
+
+
+
+
 deer.list<-markingJUL2025.df$DEER.ID
 
 deer.colors<-rainbow(n=length(deer.list))
@@ -1183,8 +1208,11 @@ anchor<-c(61.491530956260874, 5.096944740514957)
     print(i)
     col<-deer.colors[i]
     print(col)
+    
+    
     mymap<-mymap%>%
-      addPolylines(lng = st_coordinates(gps.tracks.ls[[i]])[,1], lat= st_coordinates(gps.tracks.ls[[i]])[,2],color =col,weight=1,group=deer.list[i],opacity=0.75)#%>%
+      addPolylines(lng = st_coordinates(gps.tracks.ls[[i]])[,1], lat= st_coordinates(gps.tracks.ls[[i]])[,2],color ="blue",weight=1,group=deer.list[i],opacity=0.75)#%>%
+    
     mymap<-mymap%>%
       addCircleMarkers(
         lng = st_coordinates(gps.pts.ls[[i]])[, 1],
@@ -1192,8 +1220,20 @@ anchor<-c(61.491530956260874, 5.096944740514957)
         #popup = gps.tracks.ls[[i]],
         group = deer.list[i],
         radius = 1,
-        color =col,opacity=0.5
+        color="blue",opacity=0.5
+        #color =col
       )
+    
+    mymap<-mymap%>%
+      addCircleMarkers(
+        lng = st_coordinates(last.batch.ls[[i]])[, 1],
+        lat = st_coordinates(last.batch.ls[[i]])[, 2],
+        #popup = gps.tracks.ls[[i]],
+        group = deer.list[i],
+        radius = 0.5,
+        color ="red",opacity=1
+      )
+    
      }
   
   
