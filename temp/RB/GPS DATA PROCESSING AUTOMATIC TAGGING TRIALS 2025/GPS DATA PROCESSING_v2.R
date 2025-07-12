@@ -232,7 +232,7 @@ for (i in 1:dim(marking.df)[1]) {
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 file.list<-list.files(dat.path,recursive = TRUE,pattern = "\\.json$")
-last.hours<-1.5
+last.hours<-12
 
 i<-13
 for (i in 1:dim(marking.df)[1]) {
@@ -714,15 +714,15 @@ for (i in 1:dim(marking.df)[1]) {
       #----- CENTROID FOR LAST X HOURS
       
       #--TO CHECK
-      # last.hours<-1.5
-      #   temp1<-dat$gps.sf%>%
-      #   filter(as.numeric(difftime(max(datetime.posix),datetime.posix,units = "hours"))<=last.hours)
-      #   temp<-temp1%>%
-      #     #group_by(deer.id)%>% 
-      #     arrange(datetime.posix) %>% 
-      #     summarize(geometry = st_combine(geometry) ) %>% 
-      #     st_cast("LINESTRING")%>%ungroup()
-      #   mapview(temp) + mapview(temp1)
+      
+        temp1<-dat$gps.sf%>%
+        filter(as.numeric(difftime(max(datetime.posix),datetime.posix,units = "hours"))<=last.hours)
+        temp<-temp1%>%
+          #group_by(deer.id)%>%
+          arrange(datetime.posix) %>%
+          summarize(geometry = st_combine(geometry) ) %>%
+          st_cast("LINESTRING")%>%ungroup()
+        mapview(temp) + mapview(temp1)
         
       
       centroid.xy<-dat$gps.sf%>%
@@ -1121,6 +1121,8 @@ for (i in 1:dim(marking.df)[1]) {
 ## ------ MAPPING ALL DEER POSITIONS  ----- (USE LEAFLET INSTEAD TO TOGGLE BETWEEN INDIVIDUALS)
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+
+{
 #--for now, only plot
 markingJUL2025.df<-marking.df#%>%filter(collared.datetime.posix>=as.POSIXct("2025-06-30"))
 
@@ -1303,7 +1305,7 @@ out.path<-file.path("C:/Users/richbi/OneDrive - Norwegian University of Life Sci
 saveWidget(mymap, file=out.path)
 getwd()
 
-
+}################ MAKING LEAFLET
 
 # 
 # #########################################
